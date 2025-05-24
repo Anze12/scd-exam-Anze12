@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+  namespace: dataviz-ns
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      initContainers:
+        - name: place-index
+          image: nginx
+          volumeMounts:
+            - name: frontend-data
+              mountPath: /usr/share/nginx/html
+      containers:
+        - name: frontend
+          image: ismailza/mern-stack-app-frontend:latest
+          ports:
+            - containerPort: 5173   
+          volumeMounts:
+            - name: frontend-data
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: frontend-data
+          persistentVolumeClaim:
+            claimName: frontend-pvc
